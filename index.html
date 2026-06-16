@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex,nofollow" />
+<title>小樽導生密碼查詢 · Otaru Advising Password</title>
+<style>
+  :root{
+    --paper:#ebe9ef;
+    --card:#ffffff;
+    --ink:#211b29;
+    --muted:#6f6877;
+    --line:#ddd8e3;
+    --accent:#82318e;          /* 清華紫 NTHU purple */
+    --accent-soft:#f1e6f3;
+    --accent-ink:#5e1f68;
+    --danger:#9c3b32;
+    --danger-soft:#f6e7e4;
+    --radius:14px;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    font-family:var(--sans);
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:clamp(20px,6vh,72px) 18px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{width:100%;max-width:440px;}
+
+  /* 語言切換 */
+  .lang{
+    display:flex;justify-content:flex-end;gap:2px;margin-bottom:14px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  }
+  .lang button{
+    background:none;border:1px solid transparent;color:var(--muted);
+    padding:4px 8px;border-radius:6px;cursor:pointer;font:inherit;
+  }
+  .lang button[aria-pressed="true"]{color:var(--ink);border-color:var(--line);background:var(--card);}
+
+  /* 卡片 */
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:clamp(24px,5vw,34px);
+    box-shadow:0 1px 2px rgba(27,37,48,.04),0 12px 32px -18px rgba(27,37,48,.25);
+  }
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 10px;
+  }
+  h1{
+    font-size:clamp(22px,5vw,27px);line-height:1.15;letter-spacing:-.02em;
+    font-weight:680;margin:0 0 8px;
+  }
+  .sub{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 26px;}
+
+  label{display:block;font-size:13px;font-weight:600;margin:0 0 7px;letter-spacing:.01em;}
+  .field{margin-bottom:18px;}
+  input[type=text]{
+    width:100%;font:inherit;font-size:16px;
+    padding:13px 14px;color:var(--ink);
+    background:#fbfcfd;border:1px solid var(--line);border-radius:10px;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  input[type=text]::placeholder{color:#a9b2bb;}
+  input[type=text]:focus{
+    outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .id-input{font-family:var(--mono);letter-spacing:.06em;}
+
+  button.go{
+    width:100%;font:inherit;font-weight:650;font-size:15px;letter-spacing:.02em;
+    color:#fff;background:var(--accent);
+    border:none;border-radius:10px;padding:14px;cursor:pointer;
+    transition:background .15s,transform .05s;
+  }
+  button.go:hover{background:var(--accent-ink);}
+  button.go:active{transform:translateY(1px);}
+  button.go:disabled{opacity:.55;cursor:default;}
+  button.go:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-soft);}
+
+  .hint{font-size:12px;color:var(--muted);line-height:1.6;margin:16px 2px 0;}
+
+  /* 結果區 */
+  #out{margin-top:22px;}
+  .reveal{animation:rise .32s ease both;}
+  @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .result{
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  }
+  .result .meta{
+    padding:14px 16px;border-bottom:1px solid var(--line);
+    display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted);
+  }
+  .result .meta b{color:var(--ink);font-weight:600;}
+  /* 密碼憑證區（signature）*/
+  .cred{
+    position:relative;padding:18px 16px 16px;background:var(--accent-soft);
+  }
+  .cred::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);}
+  .cred .lbl{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent-ink);margin:0 0 8px;
+  }
+  .cred .pw{
+    font-family:var(--mono);font-weight:600;
+    font-size:clamp(28px,9vw,38px);letter-spacing:.08em;color:var(--ink);
+    word-break:break-all;line-height:1.1;
+  }
+  .copy{
+    margin-top:14px;display:inline-flex;align-items:center;gap:7px;
+    font:inherit;font-size:13px;font-weight:600;color:var(--accent-ink);
+    background:#fff;border:1px solid var(--accent);border-radius:8px;
+    padding:8px 13px;cursor:pointer;transition:background .15s;
+  }
+  .copy:hover{background:#fff;filter:brightness(.98);}
+  .copy:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-soft);}
+
+  .msg{
+    border-radius:10px;padding:13px 15px;font-size:14px;line-height:1.5;
+  }
+  .msg.error{background:var(--danger-soft);color:var(--danger);border:1px solid #e7c9c3;}
+  .msg.setup{background:#fff7e6;color:#8a5a00;border:1px solid #f0dca6;font-size:13px;}
+
+  .spinner{
+    width:18px;height:18px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;
+    border-radius:50%;display:inline-block;vertical-align:-4px;margin-right:8px;
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  footer{text-align:center;color:var(--muted);font-size:11px;margin-top:18px;letter-spacing:.02em;}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="lang" role="group" aria-label="Language">
+      <button data-lang="zh" aria-pressed="true">中文</button>
+      <button data-lang="en" aria-pressed="false">EN</button>
+    </div>
+
+    <main class="card">
+      <p class="eyebrow" data-i="eyebrow">選課 · 導生密碼</p>
+      <h1 data-i="title">小樽導生密碼查詢</h1>
+      <p class="sub" data-i="sub">輸入你的姓名與學號，查詢本學期選課用的導生密碼。每個人只會查到自己的資料。</p>
+
+      <div class="field">
+        <label for="name" data-i="nameLabel">姓名</label>
+        <input id="name" type="text" autocomplete="off" spellcheck="false" data-i-ph="namePh" placeholder="例：王小明">
+      </div>
+      <div class="field">
+        <label for="sid" data-i="idLabel">學號</label>
+        <input id="sid" type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
+               class="id-input" data-i-ph="idPh" placeholder="例：113590001">
+      </div>
+
+      <button id="go" class="go" data-i="btn">查詢密碼</button>
+
+      <div id="out" aria-live="polite"></div>
+
+      <p class="hint" data-i="hint">查不到時請確認姓名是否與系上名單一致（含正確用字）。連續錯誤多次會暫時鎖定。</p>
+    </main>
+
+    <footer data-i="foot">資料僅供本人查詢使用</footer>
+  </div>
+
+<!-- 設定檔：要改的東西全部在 config.js，這支程式只負責讀它 -->
+<script src="config.js"></script>
+
+<script>
+/* 讀取 config.js 的設定；若沒上傳或檔名打錯，會顯示提示而不是整頁壞掉 */
+const C = (typeof CONFIG !== "undefined" && CONFIG) ? CONFIG : {};
+const ENDPOINT_URL = String(C.endpoint || "").trim();
+
+/* 套用主題色：無效或留白就維持 CSS 預設的清華紫，並自動算出深/淺色 */
+(function applyTheme(hex){
+  if(!/^#?[0-9a-fA-F]{6}$/.test(hex || "")) return;
+  hex = hex.replace("#","");
+  var r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+  var mix=function(c,t,p){ return Math.round(c+(t-c)*p); };
+  var s=document.documentElement.style;
+  s.setProperty("--accent", "#"+hex);
+  s.setProperty("--accent-ink",  "rgb("+mix(r,0,.34)+","+mix(g,0,.34)+","+mix(b,0,.34)+")");
+  s.setProperty("--accent-soft", "rgb("+mix(r,255,.9)+","+mix(g,255,.9)+","+mix(b,255,.9)+")");
+})(C.accentColor);
+
+/* ---------- 多語字串 ---------- */
+const I18N = {
+  zh:{
+    eyebrow:"選課 · 導生密碼", title:"小樽導生密碼查詢",
+    sub:"輸入你的姓名與學號，查詢本學期選課用的導生密碼。每個人只會查到自己的資料。",
+    nameLabel:"姓名", idLabel:"學號", namePh:"例：王小明", idPh:"例：113590001",
+    btn:"查詢密碼", btnLoading:"查詢中…",
+    hint:"查不到時請確認姓名是否與系上名單一致（含正確用字）。連續錯誤多次會暫時鎖定。",
+    foot:"資料僅供本人查詢使用",
+    needBoth:"請輸入姓名與學號。",
+    copy:"複製密碼", copied:"已複製", pwLabel:"導生密碼",
+    program:"系級", status:"狀態",
+    netErr:"連線失敗，請稍後再試或聯絡系辦。",
+    setup:"⚠ 系統尚未設定：請打開 config.js，把 endpoint 換成你的 Apps Script /exec 網址。"
+  },
+  en:{
+    eyebrow:"Course Selection · Advising", title:"Otaru Advising Password",
+    sub:"Enter your name and student ID to get this term's advising password. You can only see your own record.",
+    nameLabel:"Name", idLabel:"Student ID", namePh:"e.g. 王小明", idPh:"e.g. 113590001",
+    btn:"Look up password", btnLoading:"Looking up…",
+    hint:"If nothing is found, check that your name matches the department roster exactly. Repeated failures will lock the ID temporarily.",
+    foot:"For your own lookup only",
+    needBoth:"Please enter both name and student ID.",
+    copy:"Copy password", copied:"Copied", pwLabel:"Advising password",
+    program:"Program", status:"Status",
+    netErr:"Connection failed. Please try again later or contact the office.",
+    setup:"⚠ Not configured: open config.js and set endpoint to your Apps Script /exec URL."
+  }
+};
+
+let lang = "zh";
+const $ = s => document.querySelector(s);
+const out = $("#out");
+
+function applyLang(){
+  const t = I18N[lang];
+  document.documentElement.lang = lang === "zh" ? "zh-Hant" : "en";
+  document.querySelectorAll("[data-i]").forEach(el=>{
+    const k = el.getAttribute("data-i"); if(t[k]!=null) el.textContent = t[k];
+  });
+  document.querySelectorAll("[data-i-ph]").forEach(el=>{
+    const k = el.getAttribute("data-i-ph"); if(t[k]!=null) el.placeholder = t[k];
+  });
+  document.querySelectorAll(".lang button").forEach(b=>{
+    b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+  });
+}
+document.querySelectorAll(".lang button").forEach(b=>{
+  b.addEventListener("click", ()=>{ lang=b.dataset.lang; applyLang(); });
+});
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function showError(text, kind){
+  out.innerHTML = `<div class="msg ${kind||'error'} reveal">${esc(text)}</div>`;
+}
+
+function showResult(d){
+  const t = I18N[lang];
+  const term = d.term ? esc(d.term).replace(/導[師生]密碼$/,'').trim() : "";
+  const metaBits = [];
+  if(d.program) metaBits.push(`${t.program}：<b>${esc(d.program)}</b>`);
+  if(d.status)  metaBits.push(`${t.status}：<b>${esc(d.status)}</b>`);
+  out.innerHTML = `
+    <div class="result reveal">
+      <div class="meta">
+        <span><b>${esc(d.name)}</b></span>
+        <span>${esc(d.id)}</span>
+        ${metaBits.map(m=>`<span>${m}</span>`).join("")}
+      </div>
+      <div class="cred">
+        <p class="lbl">${term ? esc(term)+" " : ""}${t.pwLabel}</p>
+        <div class="pw" id="pw">${esc(d.password)}</div>
+        <button class="copy" id="copyBtn" type="button">
+          <span>${t.copy}</span>
+        </button>
+      </div>
+    </div>`;
+  $("#copyBtn").addEventListener("click", async ()=>{
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(d.password);
+      } else { throw new Error("no-secure-clipboard"); }
+    }
+    catch(e){
+      const r=document.createRange(); r.selectNode($("#pw"));
+      const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+      try{ document.execCommand("copy"); }catch(_){}
+      s.removeAllRanges();
+    }
+    $("#copyBtn").querySelector("span").textContent = I18N[lang].copied;
+  });
+}
+
+async function lookup(){
+  const t = I18N[lang];
+  const name = $("#name").value;
+  const id   = $("#sid").value;
+
+  if(!name.trim() || !id.trim()){ showError(t.needBoth); return; }
+
+  if(!/^https:\/\/script\.google\.com\//.test(ENDPOINT_URL)){
+    showError(t.setup, "setup"); return;
+  }
+
+  const btn = $("#go");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>${t.btnLoading}`;
+  out.innerHTML = "";
+
+  try{
+    // 用 text/plain（預設）送 POST，避免觸發 CORS 預檢
+    const res  = await fetch(ENDPOINT_URL, { method:"POST", body: JSON.stringify({ name, id }) });
+    const data = await res.json();
+    if(data.ok) showResult(data);
+    else        showError(data.msg || t.netErr);
+  }catch(err){
+    showError(t.netErr);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = I18N[lang].btn;
+  }
+}
+
+$("#go").addEventListener("click", lookup);
+$("#sid").addEventListener("keydown", e=>{ if(e.key==="Enter") lookup(); });
+$("#name").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#sid").focus(); });
+
+/* 用設定檔的標題覆蓋預設值（兩種語言都套用） */
+if(C.titleZh) I18N.zh.title = C.titleZh;
+if(C.titleEn) I18N.en.title = C.titleEn;
+document.title = (I18N.zh.title || "") + " · " + (I18N.en.title || "");
+
+applyLang();
+</script>
+</body>
+</html>
